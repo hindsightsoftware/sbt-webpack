@@ -12,6 +12,7 @@ import sbt._
 
 object WebpackImport {
   val webpack = TaskKey[Pipeline.Stage]("webpack", "Run webpack as a asset pipeline task")
+  val webpackConfig = settingKey[File]("The location of a webpack configuration file.")
 }
 
 object SbtWebpack extends AutoPlugin {
@@ -26,12 +27,13 @@ object SbtWebpack extends AutoPlugin {
 
   override def projectSettings = Seq(
     resourceManaged in webpack := webTarget.value / webpack.key.label,
+    webpackConfig in webpack := baseDirectory.value / "webpack.config.js",
     webpack := webpackPipelineTask.dependsOn(WebKeys.nodeModules in Plugin).value
   )
 
   def webpackPipelineTask: Def.Initialize[Task[Pipeline.Stage]] = Def.task {
     mappings =>
-      val webpackConfigFile = baseDirectory.value / "webpack.config.js"
+      val webpackConfigFile = webpackConfig.value
       val webpackjsShell = baseDirectory.value / "node_modules" / "webpack" / "bin" / "webpack.js"
       val outputDir = (resourceManaged in webpack).value
 
